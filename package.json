@@ -38,6 +38,10 @@
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Jedliu/vscode-debug-launcher-trigger.git"
+	},
 	"devDependencies": {
 		"@types/glob": "^7.1.4",
 		"@types/mocha": "^9.0.0",
