@@ -22,21 +22,13 @@ const getActiveFileName = () => {
   return fileName
 }
 
-const launchE2eTest = async () => {
-  const fileName = getActiveFileName()
-  if (!fileName || !fileName.match(/.e2e-spec.ts/g)) {
-    vscode.window.showErrorMessage(
-      'Please run e2e test for .e2e-spec.ts file only.'
-    )
-    return
-  }
-
+const launchE2eTest = async (fileName: string) => {
   const projectPath = (vscode.workspace as any).workspaceFolders[0].uri.path
-  await execShell(`cd ${projectPath} && npm run posttest`)
-  await execShell(`cd ${projectPath} && npm run pretest`)
+  await execShell(`cd ${projectPath} && npm run posttest:e2e`)
+  await execShell(`cd ${projectPath} && npm run pretest:e2e`)
 
   const e2eConfig = {
-    name: 'Debug Jest E2E Tests --watch',
+    name: 'Debug Jest E2E Tests in watch mode',
     type: 'node',
     request: 'launch',
     runtimeArgs: [
@@ -64,17 +56,9 @@ const launchE2eTest = async () => {
   )
 }
 
-const launchJestTest = async () => {
-  const fileName = getActiveFileName()
-  if (!fileName || !fileName.match(/.spec.ts/g)) {
-    vscode.window.showErrorMessage(
-      'Please run jest test for .spec.ts file only.'
-    )
-    return
-  }
-
+const launchJestTest = async (fileName: string, watch?: boolean) => {
   const jestConfig = {
-    name: 'Debug Jest Tests --watch',
+    name: 'Debug Jest Tests in watch mode',
     type: 'node',
     request: 'launch',
     runtimeArgs: [
@@ -88,6 +72,7 @@ const launchJestTest = async () => {
     internalConsoleOptions: 'neverOpen',
     port: 9229,
   }
+
   const commandStr = `open vscode://fabiospampinato.vscode-debug-launcher/launch?${Buffer.from(
     JSON.stringify(jestConfig),
     'ascii'
@@ -99,19 +84,27 @@ const launchJestTest = async () => {
   )
 }
 
+const runJestTest = async () => {
+  console.clear()
+  const fileName = getActiveFileName()
+  if (!fileName) {
+    vscode.window.showErrorMessage('Please open the Jest test file first.')
+  } else if (fileName.match(/e2e-spec\.ts/g)) {
+    launchE2eTest(fileName)
+  } else if (fileName.match(/spec\.ts/g)) {
+    launchJestTest(fileName)
+  } else {
+    vscode.window.showErrorMessage(
+      'Please run Jest test for .spec.ts or .e2e-spec.ts file only.'
+    )
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    'vscode-debug-launcher-trigger.e2e',
-    async () => {
-      launchE2eTest()
-    }
-  )
-  context.subscriptions.push(disposable)
-
-  disposable = vscode.commands.registerCommand(
     'vscode-debug-launcher-trigger.jest',
     async () => {
-      launchJestTest()
+      await runJestTest()
     }
   )
   context.subscriptions.push(disposable)

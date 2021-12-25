@@ -1,8 +1,8 @@
 {
 	"name": "vscode-debug-launcher-trigger",
 	"displayName": "vscode-debug-launcher-trigger",
-	"description": "",
-	"version": "0.0.1",
+	"description": "Trigger the Jest test by sending the commands to the vscode debug launcher",
+	"version": "0.0.2",
 	"publisher": "Jedliu",
 	"engines": {
 		"vscode": "^1.63.0"
@@ -11,19 +11,14 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-debug-launcher-trigger.e2e",
 		"onCommand:vscode-debug-launcher-trigger.jest"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-debug-launcher-trigger.e2e",
-				"title": "Run e2e test with opened file"
-			},
-			{
 				"command": "vscode-debug-launcher-trigger.jest",
-				"title": "Run Jest test with opened file"
+				"title": "Run Jest test and watch the changes"
 			}
 		]
 	},
