@@ -45,15 +45,7 @@ const launchE2eTest = async (fileName: string) => {
     port: 9229,
   }
 
-  const commandStr = `open vscode://fabiospampinato.vscode-debug-launcher/launch?${Buffer.from(
-    JSON.stringify(e2eConfig),
-    'ascii'
-  ).toString('base64')}`
-  await execShell(commandStr)
-
-  vscode.window.showInformationMessage(
-    `Trigger vscode debug launcher for [${fileName}]`
-  )
+  await sendCommandToLauncher(e2eConfig)
 }
 
 const launchJestTest = async (fileName: string, watch?: boolean) => {
@@ -73,15 +65,15 @@ const launchJestTest = async (fileName: string, watch?: boolean) => {
     port: 9229,
   }
 
+  await sendCommandToLauncher(jestConfig)
+}
+
+const sendCommandToLauncher = async (setting: any) => {
   const commandStr = `open vscode://fabiospampinato.vscode-debug-launcher/launch?${Buffer.from(
-    JSON.stringify(jestConfig),
+    JSON.stringify(setting),
     'ascii'
   ).toString('base64')}`
   await execShell(commandStr)
-
-  vscode.window.showInformationMessage(
-    `Trigger vscode debug launcher for [${fileName}]`
-  )
 }
 
 const runJestTest = async () => {
@@ -89,6 +81,7 @@ const runJestTest = async () => {
   const fileName = getActiveFileName()
   if (!fileName) {
     vscode.window.showErrorMessage('Please open the Jest test file first.')
+    return
   } else if (fileName.match(/e2e-spec\.ts/g)) {
     launchE2eTest(fileName)
   } else if (fileName.match(/spec\.ts/g)) {
@@ -97,7 +90,11 @@ const runJestTest = async () => {
     vscode.window.showErrorMessage(
       'Please run Jest test for .spec.ts or .e2e-spec.ts file only.'
     )
+    return
   }
+  vscode.window.showInformationMessage(
+    `Trigger vscode debug launcher for [${fileName}]`
+  )
 }
 
 export function activate(context: vscode.ExtensionContext) {
