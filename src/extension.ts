@@ -12,18 +12,31 @@ const execShell = (cmd: string) =>
     })
   })
 
-const getActiveFileName = () => {
+enum FileType {
+  debug = 'debug',
+  definition = 'definition',
+}
+
+const getActiveFileName = (type: FileType = FileType.debug) => {
   const filePath = (vscode.window as any).activeTextEditor.document.uri.path
   if (!filePath) {
-    vscode.window.showErrorMessage('Please open e2e test file to debug.')
+    const message =
+      type == FileType.debug
+        ? 'Please open test file to debug.'
+        : 'Please open entity definition file to generate templates.'
+    vscode.window.showErrorMessage(message)
     return
   }
   const fileName = path.basename(filePath)
   return fileName
 }
 
+const getProjectPath = () => {
+  return (vscode.workspace as any).workspaceFolders[0].uri.path
+}
+
 const launchE2eTest = async (fileName: string) => {
-  const projectPath = (vscode.workspace as any).workspaceFolders[0].uri.path
+  const projectPath = getProjectPath()
   await execShell(`cd ${projectPath} && npm run posttest:e2e`)
   await execShell(`cd ${projectPath} && npm run pretest:e2e`)
 
@@ -78,7 +91,7 @@ const sendCommandToLauncher = async (setting: any) => {
 
 const runJestTest = async () => {
   console.clear()
-  const fileName = getActiveFileName()
+  const fileName = getActiveFileName(FileType.debug)
   if (!fileName) {
     vscode.window.showErrorMessage('Please open the Jest test file first.')
     return
@@ -97,11 +110,54 @@ const runJestTest = async () => {
   )
 }
 
+const runCodeGenerator = async (isDebug: boolean = false) => {
+  let fileName = getActiveFileName(FileType.definition)
+  if (!fileName) return
+  fileName = fileName.replace(path.extname(fileName), '')
+
+  if (isDebug) {
+    const config = {
+      name: 'Run code generator',
+      type: 'pwa-node',
+      request: 'launch',
+      program: '${workspaceFolder}/_generators/index.ts',
+      args: [fileName],
+      console: 'integratedTerminal',
+      internalConsoleOptions: 'neverOpen',
+    }
+    await sendCommandToLauncher(config)
+  } else {
+    let activeTerm =
+      vscode.window.activeTerminal ??
+      vscode.window.createTerminal('Code generator')
+    activeTerm.show(true)
+    activeTerm.sendText(
+      `npm run env -- ts-node _generators/index.ts ${fileName}`
+    )
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     'vscode-debug-launcher-trigger.jest',
     async () => {
       await runJestTest()
+    }
+  )
+  context.subscriptions.push(disposable)
+
+  disposable = vscode.commands.registerCommand(
+    'vscode-debug-launcher-trigger.codeGenerator',
+    async () => {
+      await runCodeGenerator()
+    }
+  )
+  context.subscriptions.push(disposable)
+
+  disposable = vscode.commands.registerCommand(
+    'vscode-debug-launcher-trigger.codeGenerator_debug',
+    async () => {
+      await runCodeGenerator(true)
     }
   )
   context.subscriptions.push(disposable)

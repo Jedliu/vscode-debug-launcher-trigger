@@ -1,8 +1,8 @@
 {
 	"name": "vscode-debug-launcher-trigger",
 	"displayName": "vscode-debug-launcher-trigger",
-	"description": "Trigger the Jest test by sending the commands to the vscode debug launcher",
-	"version": "0.0.2",
+	"description": "Trigger the Jest test and code generator by sending the commands to the vscode debug launcher",
+	"version": "0.0.3",
 	"publisher": "Jedliu",
 	"engines": {
 		"vscode": "^1.63.0"
@@ -11,7 +11,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-debug-launcher-trigger.jest"
+		"onCommand:vscode-debug-launcher-trigger.jest",
+		"onCommand:vscode-debug-launcher-trigger.codeGenerator",
+		"onCommand:vscode-debug-launcher-trigger.codeGenerator_debug"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -19,6 +21,14 @@
 			{
 				"command": "vscode-debug-launcher-trigger.jest",
 				"title": "Run Jest test and watch the changes"
+			},
+			{
+				"command": "vscode-debug-launcher-trigger.codeGenerator",
+				"title": "Run the code generator"
+			},
+			{
+				"command": "vscode-debug-launcher-trigger.codeGenerator_debug",
+				"title": "Run the code generator [Debug Mode]"
 			}
 		]
 	},
